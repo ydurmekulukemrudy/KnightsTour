@@ -3,6 +3,7 @@ package com.example;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.Stack;
 
 import javafx.animation.AnimationTimer;
@@ -38,6 +39,10 @@ public class App extends Application {
         stack = new Stack<>();
         board = new int[NUMROWS][NUMCOLS];
 
+        addToExhausted(new Location(0, 0), new Location(1, 0), true);
+        addToExhausted(new Location(0, 0), new Location(1, 3), true);
+
+
         animationTimer = new AnimationTimer() {
             @Override
             public void handle(long arg0) {
@@ -61,6 +66,45 @@ public class App extends Application {
 
     public void setCurrentLoc(Location currentLoc) {
         this.currentLoc = currentLoc;
+    }
+
+    public boolean inExhaustedList(Location loc) {
+        Set<Location> keys = exhaustedList.keySet(); 
+
+        for(Location current : keys) {
+            if(current.equals(loc)){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void addToExhausted(Location from, Location to, boolean debug) {
+        if(debug) {
+            System.out.println("method addToExhausted");
+            System.out.println("___________________________________________");
+        }
+        //is from in the list
+        if(!inExhaustedList(from)) {
+            if(debug) {
+                System.out.println("Location " + from + " not in exhausted list.");
+                System.out.println("Exhausted list is " + to);
+            }
+            ArrayList<Location> temp = new ArrayList<>();
+            temp.add(to);
+            exhaustedList.put(from, temp);
+        }
+        else {
+            if(debug) {
+                System.out.println("Location " + from + " already in exhausted list");
+            }
+            ArrayList<Location> temp = exhaustedList.get(from);
+            temp.add(to);
+            if(debug) {
+                System.out.println("Maps current values: " + exhaustedList.get(from));
+            }
+        }
     }
 
     
