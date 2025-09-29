@@ -1,6 +1,6 @@
 package com.example;
 
-public class Location {
+public class Location implements Comparable<Location>{
     //private int variables
     private int row;
     private int col;
@@ -40,5 +40,15 @@ public class Location {
 
     public boolean equals(Location other) {
         return this.row == other.row && this.col == other.col;
+    }
+
+    @Override
+    public int compareTo(Location o) {
+        if(this.equals(o)) {
+            return 0;
+        }
+        return this.row - o.row;
     }  
+
+    
 }

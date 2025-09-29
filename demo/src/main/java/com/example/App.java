@@ -1,6 +1,9 @@
 package com.example;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Stack;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -13,10 +16,15 @@ import javafx.stage.Stage;
 public class App extends Application {
 
     private static Scene scene;
-    public static final int NUMROWS = 8;
-    public static final int NUMCOLS = 8;
+    public static final int NUMROWS = 5;
+    public static final int NUMCOLS = 5;
     private Location currentLoc = null;
     private AnimationTimer animationTimer;
+
+    //data structure
+    HashMap<Location, ArrayList<Location>> exhaustedList; //Maps a location with the visited locations
+    Stack<Location> stack; //My history of moves
+    int board[][]; //the number board that shows each move in sequence
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -24,6 +32,11 @@ public class App extends Application {
         scene = new Scene(knightsTourVC.getPane(), 1024, 768);
         stage.setTitle("Knight's Tour");
         stage.setScene(scene);
+
+        //initialize data structures
+        exhaustedList = new HashMap<>();
+        stack = new Stack<>();
+        board = new int[NUMROWS][NUMCOLS];
 
         animationTimer = new AnimationTimer() {
             @Override
