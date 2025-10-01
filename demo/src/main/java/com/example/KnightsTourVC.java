@@ -1,5 +1,7 @@
 package com.example;
 
+import java.util.ArrayList;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.canvas.Canvas;
@@ -66,8 +68,14 @@ public class KnightsTourVC {
         gc.fillRect(x+stroke, y+stroke, size - (stroke*2), size - (stroke*2));
     }
 
+    public void drawMoves(ArrayList <Location> locs, int xOffset, int yOffset) {
+        for(Location current : locs) {
+            drawSingleSquare(current.getCol()*50 + xOffset, current.getRow()*50 + yOffset, 50, 2, Color.RED);
+        }
+    }
+
     //draws the chessboard
-    public void draw() {
+    public void draw(Location current, ArrayList<Location> locs, int board[][]) {
         int xOffset = 20;
         int yOffset = 20;
         for(int row = 0; row < App.NUMROWS; row++) {
@@ -84,6 +92,7 @@ public class KnightsTourVC {
                 }
             }
         }
+        drawMoves(locs, xOffset, yOffset);
     }
 
     private void handleButtonClicks(ActionEvent actionEvent) {
