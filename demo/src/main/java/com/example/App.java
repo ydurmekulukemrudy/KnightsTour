@@ -21,6 +21,9 @@ public class App extends Application {
     public static final int NUMCOLS = 5;
     private Location currentLoc = null;
     private AnimationTimer animationTimer;
+    int moveCount = 1;
+    boolean step = false;
+    boolean isRunning = false;
 
     //data structure
     HashMap<Location, ArrayList<Location>> exhaustedList; //Maps a location with the visited locations
@@ -39,20 +42,33 @@ public class App extends Application {
         stack = new Stack<>();
         board = new int[NUMROWS][NUMCOLS];
 
-        addToExhausted(new Location(0, 0), new Location(1, 0));
-        addToExhausted(new Location(0, 0), new Location(1, 3));
-        addToExhausted(new Location(0, 0), new Location(2, 3));
-
-        addToExhausted(new Location(1, 0), new Location(1, 3));
-        addToExhausted(new Location(1, 0), new Location(1, 4));
-        deleteFromExhausted(new Location(1, 0));
-        System.out.println(getPossibleMoves(new Location(2, 2)));
-
 
         animationTimer = new AnimationTimer() {
+            //500_000_000 = update twice per second
+            //1_000_000_000 = update one per second
+            private long timerDelay = 1_000_000_000;
+            private long lastUpdate = timerDelay;
             @Override
-            public void handle(long arg0) {
-               knightsTourVC.draw(currentLoc, getPossibleMoves(currentLoc), board);
+            public void handle(long now) {
+                if(isRunning || step){
+                if(now - lastUpdate >= timerDelay) {
+                    //get valid move locations
+                    ArrayList<Location> locs = getPossibleMoves(currentLoc);
+
+                    //choose a possible move 
+                    Location nextLoc = chooseNextMove(locs);
+
+                    //move to that location and update all the data structure
+                    if(nextLoc != null) {
+                        board[nextLoc.getRow()][nextLoc.getCol()] = moveCount;
+                        moveCount++;//adds one to the move count
+                        currentLoc = nextLoc;//sets the current to the next loc
+                    }
+                    lastUpdate = now;
+                    step = false;
+                }
+                }
+                knightsTourVC.draw(currentLoc, getPossibleMoves(currentLoc), board);
             }  
         };
 
@@ -118,6 +134,14 @@ public class App extends Application {
         System.out.println();
     }
 
+    public Location chooseNextMove(ArrayList<Location> locs) {
+        if(locs == null) return null;
+        if(locs.size() == 0) return null;
+
+        //returns first possible location
+        return locs.get(0);
+    }
+
     //returns an arraylist of all the possible moves; removes out of bounds moves and those moves that have already been moved to
     public ArrayList<Location> getPossibleMoves(Location loc) {
         
@@ -181,5 +205,31 @@ public class App extends Application {
             return false;
         }
         return true;
+    }
+
+    //returns the value at a point
+    public int getBoardValue(int row, int col) {
+        return board[row][col];
+    }
+
+    public void setStartLoc(int row, int col) {
+        board[row][col] = 1;
+        moveCount++;
+    }
+
+    public boolean isStep() {
+        return step;
+    }
+
+    public void setStep(boolean step) {
+        this.step = step;
+    }
+
+    public boolean isIsRunning() {
+        return isRunning;
+    }
+
+    public void setIsRunning(boolean isRunning) {
+        this.isRunning = isRunning;
     }
 }

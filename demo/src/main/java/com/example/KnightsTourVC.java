@@ -12,6 +12,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import javafx.scene.text.Font;
 
 public class KnightsTourVC {
     private App app;
@@ -90,6 +91,19 @@ public class KnightsTourVC {
                 else {
                     drawSingleSquare(col*50 + yOffset, row*50 + xOffset, 50, 2, Color.GRAY);
                 }
+                int boardVal = app.getBoardValue(row, col);
+                if(boardVal != 0) {
+                    gc.setFill(Color.BLACK);
+                    gc.setFont(new Font(24));
+                    //offsets for single digit numbers
+                    if(boardVal < 10) {
+                        gc.fillText("" + app.getBoardValue(row, col), col * 50 + yOffset + 18, row * 50 + xOffset + 33);
+                    }
+                    //offsets for double digit numbers
+                    else {
+                        gc.fillText("" + app.getBoardValue(row, col), col * 50 + yOffset + 11, row * 50 + xOffset + 33);
+                    }
+                }
             }
         }
         drawMoves(locs, xOffset, yOffset);
@@ -109,6 +123,8 @@ public class KnightsTourVC {
                         int col = Integer.parseInt(colTextField.getText());
                         Location loc = new Location(row, col);
                         app.setCurrentLoc(loc);
+                        app.setStartLoc(row, col);
+                        app.setIsRunning(true);
                     } catch(Exception e) {
                         rowTextField.setText("");
                         colTextField.setText("");
@@ -118,9 +134,30 @@ public class KnightsTourVC {
             }
             else if (buttonText.equals("Pause")){
                 startButton.setText("Continue");
+                app.setIsRunning(false);
             }
             else {
                 startButton.setText("Pause");
+                app.setIsRunning(true);
+            }
+        }//end startbutton code
+
+        if(actionEvent.getSource() == stepButton) {
+            if(app.getCurrentLoc() == null) {
+                try {
+                    int row = Integer.parseInt(rowTextField.getText());
+                    int col = Integer.parseInt(colTextField.getText());
+                    Location loc = new Location(row, col);
+                    app.setCurrentLoc(loc);
+                    app.setStartLoc(row, col);
+                    app.setStep(true);
+                } catch(Exception e) {
+                    rowTextField.setText("");
+                    colTextField.setText("");
+                }
+            }
+            else {//there is a current location
+                app.setStep(true);
             }
         }
     }
