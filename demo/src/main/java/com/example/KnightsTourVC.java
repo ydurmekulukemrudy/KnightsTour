@@ -73,6 +73,13 @@ public class KnightsTourVC {
         for(Location current : locs) {
             drawSingleSquare(current.getCol()*50 + xOffset, current.getRow()*50 + yOffset, 50, 2, Color.RED);
         }
+        /* Remove this drawing if choosing a move is modified to be random, this will not work
+         * unless the chooseNextMove method is deterministic
+         */
+        Location nextMove = app.chooseNextMove(locs);
+        if(nextMove != null) {
+            drawSingleSquare(nextMove.getCol()*50 + xOffset, nextMove.getRow()*50 + yOffset, 50, 2, Color.PURPLE);
+        }
     }
 
     //draws the chessboard
@@ -107,6 +114,9 @@ public class KnightsTourVC {
             }
         }
         drawMoves(locs, xOffset, yOffset);
+        gc.setFill(Color.BLACK);
+        gc.setFont(new Font(10));
+        gc.fillText(app.getStack().toString(), 10, 400);
     }
 
     private void handleButtonClicks(ActionEvent actionEvent) {
@@ -213,7 +223,7 @@ public class KnightsTourVC {
 
         canvas = new Canvas(600, 500); //a canvas that is 600x500
         gc = canvas.getGraphicsContext2D(); //draw 2d things on the canvas
-        gc.setFill(Color.RED); //choose red as the color
+        gc.setFill(Color.GHOSTWHITE); //choose red as the color
         gc.fillRect(0, 0, 600, 500); //fill the entire area 600x500, with a red rectangle
         AnchorPane.setLeftAnchor(canvas, 50.0);
         AnchorPane.setTopAnchor(canvas, 100.0);

@@ -46,7 +46,7 @@ public class App extends Application {
         animationTimer = new AnimationTimer() {
             //500_000_000 = update twice per second
             //1_000_000_000 = update one per second
-            private long timerDelay = 1_000_000_000;
+            private long timerDelay = 1;
             private long lastUpdate = timerDelay;
             @Override
             public void handle(long now) {
@@ -55,20 +55,41 @@ public class App extends Application {
                     //get valid move locations
                     ArrayList<Location> locs = getPossibleMoves(currentLoc);
 
-                    //choose a possible move 
-                    Location nextLoc = chooseNextMove(locs);
+                    if(locs.size() > 0) {//start locs > 0 if
+                        //choose a possible move 
+                        Location nextLoc = chooseNextMove(locs);
 
-                    //move to that location and update all the data structure
-                    if(nextLoc != null) {
-                        board[nextLoc.getRow()][nextLoc.getCol()] = moveCount;
-                        moveCount++;//adds one to the move count
-                        currentLoc = nextLoc;//sets the current to the next loc
+                        //move to that location and update all the data structure
+                        if(nextLoc != null) {
+                            board[nextLoc.getRow()][nextLoc.getCol()] = moveCount;
+                            moveCount++;//adds one to the move count
+                            addToExhausted(currentLoc, nextLoc);
+                            currentLoc = nextLoc;//sets the current to the next loc 
+                            stack.push(currentLoc);                     
+                        }
+                    }//end locs > 0 if
+
+                    //else if there are no moves to make and I am not done with the tour
+                    else if(stack.size() != NUMROWS * NUMCOLS) {
+                        //I need to back track
+                        Location removeLoc = stack.pop();//remove my last move
+                        currentLoc = stack.peek(); //move current back to the previous move
+                        board[removeLoc.getRow()][removeLoc.getCol()] = 0;
+                        deleteFromExhausted(removeLoc);
+                        moveCount--; //decrease in size
+                    }
+
+                    //we are done with the tour
+                    else {
+
                     }
                     lastUpdate = now;
                     step = false;
                 }
                 }
                 knightsTourVC.draw(currentLoc, getPossibleMoves(currentLoc), board);
+                System.out.println("stack: " + stack.toString());
+                System.out.println("exhausted: " + exhaustedToString());
             }  
         };
 
@@ -139,7 +160,25 @@ public class App extends Application {
         if(locs.size() == 0) return null;
 
         //returns first possible location
-        return locs.get(0);
+        return findLowestDegree(currentLoc);
+    }
+
+    public boolean isInExhausted(Location from, Location to) {
+        //grab the arraylist associated with from
+        ArrayList<Location> list = exhaustedList.get(from);
+
+        //if the list is null, then from is not in the exhausted list at all
+        if(list == null) {
+            return false;
+        }
+        //loop through the ArrayList and see if Location to is in the list
+        for(Location loc: list) {
+            if(loc.equals(to)) {
+                return true;
+            }
+        }
+
+        return false; //I must have never found Location to in the ArrayList
     }
 
     //returns an arraylist of all the possible moves; removes out of bounds moves and those moves that have already been moved to
@@ -156,34 +195,34 @@ public class App extends Application {
         Location temp = new Location(loc.getRow() - 2, loc.getCol() - 1);
         //checks all 8 possible location
         while(check < 8) {
-            if(isValid(temp)) {
+            if(isValid(temp) && !isInExhausted(loc, temp)) {
                 moves.add(temp);
             }
-            if(check == 0) {
+            if(check == 0 ) {
                 //top left middlemost
                 temp = new Location(temp.getRow() + 1, temp.getCol() - 1);
             }
-            if(check == 1) {
+            if(check == 1 ) {
                 //top right middlemost
                 temp = new Location(temp.getRow() + 2, temp.getCol());
             }
-            if(check == 2) {
+            if(check == 2 ) {
                 //top right most
                 temp = new Location(temp.getRow() + 1, temp.getCol() + 1);
             }
-            if(check == 3) {
+            if(check == 3 ) {
                 //bottom right most
                 temp = new Location(temp.getRow(), temp.getCol() + 2);
             }
-            if(check == 4) {
+            if(check == 4 ) {
                 //bottom right middlemost
                 temp = new Location(temp.getRow() - 1, temp.getCol() + 1);
             }
-            if(check == 5) {
+            if(check == 5 ) {
                 //bottom left middle most
                 temp = new Location(temp.getRow() - 2, temp.getCol());
             }
-            if(check == 6) {
+            if(check == 6 ) {
                 //bottom left most
                 temp = new Location(temp.getRow() - 1, temp.getCol() - 1);
             }
@@ -215,6 +254,7 @@ public class App extends Application {
     public void setStartLoc(int row, int col) {
         board[row][col] = 1;
         moveCount++;
+        stack.push(new Location(row, col)); 
     }
 
     public boolean isStep() {
@@ -231,5 +271,52 @@ public class App extends Application {
 
     public void setIsRunning(boolean isRunning) {
         this.isRunning = isRunning;
+    }
+
+    public Stack<Location> getStack() {
+        return stack;
+    }
+
+    public void setStack(Stack<Location> stack) {
+        this.stack = stack;
+    }
+
+    public String exhaustedToString() {
+        String output = "";
+        Set<Location> keys = exhaustedList.keySet();
+
+        for(Location k : keys) {
+            output += k + ": " + exhaustedList.get(k) + "\n";
+        }
+
+        return output;
+    }
+
+    public int getDegree(Location loc) {
+        return getPossibleMoves(loc).size();
+    }
+
+    public Location findLowestDegree(Location loc) {
+        ArrayList<Location> locs = getPossibleMoves(loc);
+
+        int lowDegree;
+        Location lowLoc;
+
+        if(locs.size() <= 0) {
+            return null;
+        }
+        
+        else{
+            lowDegree = getDegree(locs.get(0));
+            lowLoc = locs.get(0);
+            for(Location l : locs) {
+                if(getDegree(l) < lowDegree) {
+                    lowDegree = getDegree(l);
+                    lowLoc = l;
+                }
+            }
+        }
+
+        return lowLoc;
     }
 }
